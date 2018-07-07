@@ -139,6 +139,7 @@ bool CDVDSession::GetDiscKey()
 	if(!ReadKey(DvdDiskKey, DiscKeys)) {
 		return false;
 	}
+	memcpy(m_AllDiscKey, DiscKeys, sizeof(DiscKeys));
 
 	for(int i = 0; i < g_nPlayerKeys; i++) {
 		for(int j = 1; j < 409; j++) {
@@ -155,7 +156,10 @@ bool CDVDSession::GetDiscKey()
 			CSSdisckey(Hash, DiscKey);
 
 			if(!memcmp(Hash, DiscKey, 6)) {
+				memcpy(m_PlayerKey, g_PlayerKeys[i], 6);
+				m_PlayerKeyIdx = i + 1;
 				memcpy(m_DiscKey, DiscKey, 6);
+				m_DiscKeyIdx = j + 1;
 				return true;
 			}
 		}
@@ -298,14 +302,34 @@ bool CDVDSession::ReadKey(DVD_KEY_TYPE KeyType, BYTE* pKeyData, int lba)
 	return true;
 }
 
-void CDVDSession::OutputDiscKey()
+void CDVDSession::OutputDiscKey(CHAR* path)
 {
-	printf("DiscKey: %x%x%x%x%x%x\n"
-		, m_DiscKey[0], m_DiscKey[1], m_DiscKey[2], m_DiscKey[3], m_DiscKey[4], m_DiscKey[5]);
+	FILE* fp = fopen(path, "w");
+	if (!fp) {
+		fprintf(stderr, "Couldn't create %s\n", path);
+		return;
+	}
+	fprintf(fp, "AllDiscKeys ((5 byte per 1 key) * 409 keys)\n");
+	for (INT i = 0; i < 409; i++) {
+		fprintf(fp, "[%03d]: %02X %02X %02X %02X %02X"
+			, i + 1, m_AllDiscKey[5 * i], m_AllDiscKey[5 * i + 1]
+			, m_AllDiscKey[5 * i + 2], m_AllDiscKey[5 * i + 3], m_AllDiscKey[5 * i + 4]);
+		if (i % 4 == 0) {
+			fprintf(fp, "\n");
+		}
+		else {
+			fprintf(fp, " ");
+		}
+	}
+	fprintf(fp, "PlayerKey[%d]: %02X %02X %02X %02X %02X\n"
+		, m_PlayerKeyIdx, m_PlayerKey[0], m_PlayerKey[1], m_PlayerKey[2], m_PlayerKey[3], m_PlayerKey[4]);
+	fprintf(fp, "DecryptedDiscKey[%03d]: %02X %02X %02X %02X %02X\n"
+		, m_DiscKeyIdx, m_DiscKey[0], m_DiscKey[1], m_DiscKey[2], m_DiscKey[3], m_DiscKey[4]);
+	fclose(fp);
 }
 
 void CDVDSession::OutputTitleKey()
 {
-	printf("TitleKey: %x%x%x%x%x%x\n"
-		, m_TitleKey[0], m_TitleKey[1], m_TitleKey[2], m_TitleKey[3], m_TitleKey[4], m_TitleKey[5]);
+	printf("TitleKey: %02x%02x%02x%02x%02x\n"
+		, m_TitleKey[0], m_TitleKey[1], m_TitleKey[2], m_TitleKey[3], m_TitleKey[4]);
 }
