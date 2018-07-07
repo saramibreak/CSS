@@ -2,7 +2,7 @@
 This is a CSS authentication app of DVD
 
 ## Usage
-        CSS.exe <DriveLetter>
+        CSS.exe <DriveLetter> <OutFile>
 
 ## Development Tool
  Visual Studio 2017 (Visual C++ 2017)
