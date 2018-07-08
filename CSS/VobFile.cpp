@@ -309,7 +309,7 @@ void CDVDSession::OutputDiscKey(CHAR* path)
 		fprintf(stderr, "Couldn't create %s\n", path);
 		return;
 	}
-	fprintf(fp, "AllDiscKeys ((5 byte per 1 key) * 409 keys)\n");
+	fprintf(fp, "AllDiscKeys ((40 bits per 1 key) * 409 keys)\n");
 	for (INT i = 0; i < 409; i++) {
 		fprintf(fp, "[%03d]: %02X %02X %02X %02X %02X"
 			, i + 1, m_AllDiscKey[5 * i], m_AllDiscKey[5 * i + 1]
@@ -330,6 +330,6 @@ void CDVDSession::OutputDiscKey(CHAR* path)
 
 void CDVDSession::OutputTitleKey()
 {
-	printf("TitleKey: %02x%02x%02x%02x%02x\n"
+	printf("TitleKey: %02x %02x %02x %02x %02x\n"
 		, m_TitleKey[0], m_TitleKey[1], m_TitleKey[2], m_TitleKey[3], m_TitleKey[4]);
 }
