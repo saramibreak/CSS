@@ -119,7 +119,7 @@ bool CDVDSession::Authenticate()
     return true;
 }
 
-bool CDVDSession::GetDiscKey()
+bool CDVDSession::GetDiscKey(FILE* fp)
 {
     if (m_session == DVD_END_ALL_SESSIONS) {
         return false;
@@ -129,7 +129,7 @@ bool CDVDSession::GetDiscKey()
     if (!ReadKey(DvdDiskKey, DiscKeys)) {
         return false;
     }
-	memcpy(m_AllDiscKey, DiscKeys, sizeof(DiscKeys));
+	OutputEncryptedDiscKey(fp, DiscKeys);
 
     for (int i = 0; i < g_nPlayerKeys; i++) {
         for (int j = 1; j < 409; j++) {
@@ -283,7 +283,8 @@ bool CDVDSession::ReadKey(DVD_KEY_TYPE KeyType, BYTE* pKeyData, int lba)
     DWORD dwBytesReturned;
     if (!DeviceIoControl(m_hDrive, IOCTL_DVD_READ_KEY, pKey, pKey->KeyLength, pKey, pKey->KeyLength, &dwBytesReturned, nullptr)) {
 		OutputLastErrorNumAndString(_T(__FUNCTION__), __LINE__);
-        return false;
+		fprintf(stderr, "-> LBA %d\n", lba);
+		return false;
     }
 
     switch (KeyType) {
@@ -295,7 +296,7 @@ bool CDVDSession::ReadKey(DVD_KEY_TYPE KeyType, BYTE* pKeyData, int lba)
             break;
         case DvdDiskKey:
             memcpy(pKeyData, pKey->KeyData, 2048);
-            for (int i = 0; i < 2048 / 5; i++) {
+            for (int i = 0; i < 2048/* / 5*/; i++) {
                 pKeyData[i] ^= m_SessionKey[4 - (i % 5)];
             }
             break;
@@ -312,13 +313,13 @@ bool CDVDSession::ReadKey(DVD_KEY_TYPE KeyType, BYTE* pKeyData, int lba)
     return true;
 }
 
-void CDVDSession::OutputDiscKey(FILE* fp)
+void CDVDSession::OutputEncryptedDiscKey(FILE* fp, LPBYTE DiscKeys)
 {
 	fprintf(fp, "AllDiscKeys ((40 bits per 1 key) * 409 keys)\n");
 	for (INT i = 0; i < 409; i++) {
 		fprintf(fp, "[%03d]: %02X %02X %02X %02X %02X"
-			, i + 1, m_AllDiscKey[5 * i], m_AllDiscKey[5 * i + 1]
-			, m_AllDiscKey[5 * i + 2], m_AllDiscKey[5 * i + 3], m_AllDiscKey[5 * i + 4]);
+			, i + 1, DiscKeys[5 * i], DiscKeys[5 * i + 1]
+			, DiscKeys[5 * i + 2], DiscKeys[5 * i + 3], DiscKeys[5 * i + 4]);
 		if (i % 4 == 0) {
 			fprintf(fp, "\n");
 		}
@@ -326,6 +327,10 @@ void CDVDSession::OutputDiscKey(FILE* fp)
 			fprintf(fp, " ");
 		}
 	}
+}
+
+void CDVDSession::OutputDecryptedDiscKey(FILE* fp)
+{
 	fprintf(fp, "PlayerKey[%d]: %02X %02X %02X %02X %02X\n"
 		, m_PlayerKeyIdx, m_PlayerKey[0], m_PlayerKey[1], m_PlayerKey[2], m_PlayerKey[3], m_PlayerKey[4]);
 	fprintf(fp, "DecryptedDiscKey[%03d]: %02X %02X %02X %02X %02X\n"

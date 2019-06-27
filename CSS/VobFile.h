@@ -9,7 +9,7 @@ protected:
 
 	BYTE m_SessionKey[5];
 
-	BYTE m_AllDiscKey[2048], m_PlayerKey[6], m_DiscKey[6], m_TitleKey[6];
+	BYTE m_PlayerKey[6], m_DiscKey[6], m_TitleKey[6];
 	INT m_PlayerKeyIdx, m_DiscKeyIdx;
 
 public:
@@ -22,11 +22,12 @@ public:
 	bool BeginSession();
 	void EndSession();
 	bool Authenticate();
-	bool GetDiscKey();
+	bool GetDiscKey(FILE* fp);
 	bool GetTitleKey(int lba, BYTE* pKey);
 	bool SendKey(DVD_KEY_TYPE KeyType, BYTE* pKeyData);
 	bool ReadKey(DVD_KEY_TYPE KeyType, BYTE* pKeyData, int lba = 0);
 
-	void OutputDiscKey(FILE* fp);
+	void OutputEncryptedDiscKey(FILE* fp, LPBYTE DiscKeys);
+	void OutputDecryptedDiscKey(FILE* fp);
 	void OutputTitleKey(FILE* fp, INT lba, CHAR* fname, BYTE* titleKey);
 };
