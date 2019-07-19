@@ -2,8 +2,8 @@
 This is a CSS authentication app of DVD
 
 ## Usage
-        CSS.exe <DriveLetter> <OutFile>
-
+        CSS.exe <DriveLetter> <ProtectType> <OutFile>  
+         ProtectType: css or cprm
 ## Development Tool
  Visual Studio 2017 (Visual C++ 2017)
 
