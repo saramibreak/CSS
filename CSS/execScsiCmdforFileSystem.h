@@ -107,3 +107,15 @@ BOOL ReadDVDForFileSystem(
 	LPBYTE lpBuf,
 	PVOB pVOB
 );
+
+BOOL ScsiPassThroughDirect(
+	PDEVICE pDevice,
+	LPVOID lpCdb,
+	BYTE byCdbLength,
+	LPVOID pvBuffer,
+	INT nDataDirection,
+	DWORD dwBufferLength,
+	LPBYTE byScsiStatus,
+	LPCTSTR pszFuncName,
+	LONG lLineNum
+);

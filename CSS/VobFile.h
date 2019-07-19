@@ -19,6 +19,8 @@ public:
 	bool Open(LPCTSTR path);
 	void Close();
 
+	operator HANDLE() const { return m_hDrive; }
+	void SetSession(DVD_SESSION_ID session) { m_session = session; };
 	bool BeginSession();
 	void EndSession();
 	bool Authenticate();

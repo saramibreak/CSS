@@ -25,8 +25,8 @@ bool CDVDSession::Open(LPCTSTR path)
 {
     Close();
 
-    m_hDrive = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL,
-                          OPEN_EXISTING, FILE_ATTRIBUTE_READONLY|FILE_FLAG_SEQUENTIAL_SCAN, (HANDLE)NULL);
+    m_hDrive = CreateFile(path, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
     if (m_hDrive == INVALID_HANDLE_VALUE) {
         OutputLastErrorNumAndString(_T(__FUNCTION__), __LINE__);
         return false;
